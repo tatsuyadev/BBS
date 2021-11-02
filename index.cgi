@@ -933,13 +933,6 @@ sub check_passwd {
 		#print "$password";
 		error("認証できません");
 	}
-=pod
-	#左：iphone 右：wifi
-	if ('126.186.44.29' ne $ENV{REMOTE_ADDR} and '175.132.78.5' ne $ENV{REMOTE_ADDR}) {
-	
-		error("IPが間違っています");
-	}
-=cut
 }
 
 # 入室画面
