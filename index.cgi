@@ -52,7 +52,7 @@ my $maillinkflag = 1;
 # 名前が空っぽの場合設定される名前
 my $name_empty = '名無し';
 # 1が投稿パスワード必須 0が必要なし
-my $post_passwordflag = 1;
+my $post_passwordflag = 0;
 # 上下の枠の色
 my $bgcolor = "#202070";
 my $background_color = "#b0c4de";
@@ -65,7 +65,7 @@ my $t_vw = 10;
 # ----- 設定終わり -----
 
 if($in{mode} eq 'admin'){ &admin(); }
-if($in{mode} eq 'delete'){ &dele_data(); }
+#if($in{mode} eq 'delete'){ &dele_data(); }
 if($in{mode} eq 'form'){ &form(); }
 if($in{mode} eq 'search'){ &search(); }
 
@@ -148,46 +148,35 @@ if ($message ne ""){
 	$message =~ s/\{流\}([\s|\S]+?)\{\/流\}/<marquee behavior="scroll">$1<\/marquee>/g;
 	$message =~ s/\{往\}([\s|\S]+?)\{\/往\}/<marquee behavior="alternate">$1<\/marquee>/g;
 	$message =~ s/\{太\}([\s|\S]+?)\{\/太\}/<b>$1<\/b>/g;
-	#Perl
+	# Perl
 	while ($message =~ /\{perl\}([\s|\S]+?)\{\/perl\}/g){
 		$code = $1;
-		$code =~ s/&amp;/&/g;
-		$code =~ s/&lt;/</g;
-		$code =~ s/&gt;/>/g;
-		$code =~ s/&quot;/"/g;
-		$code =~ s/<script/javascriptは使えません/gi;
-		$message =~ s/\{perl\}([\s|\S]+?)\{\/perl\}/<pre class="brush:perl;">$code<\/pre>/;
+		$message =~ s/\{perl\}([\s|\S]+?)\{\/perl\}/<pre class="line-numbers"><code class="lang-perl">$code<\/code><\/pre>/;
 	}
-	#css
+	# css
 	while ($message =~ /\{css\}([\s|\S]+?)\{\/css\}/g){
 		$code = $1;
-		$code =~ s/&amp;/&/g;
-		$code =~ s/&lt;/</g;
-		$code =~ s/&gt;/>/g;
-		$code =~ s/&quot;/"/g;
-		$code =~ s/<script/javascriptは使えません/gi;
-		$message =~ s/\{css\}([\s|\S]+?)\{\/css\}/<pre class="brush:css;">$code<\/pre>/;
+		$message =~ s/\{css\}([\s|\S]+?)\{\/css\}/<pre class="line-numbers"><code class="lang-css">$code<\/code><\/pre>/;
 	}
-=pod
-	#Javascript
-	while ($message =~ /\{javascript\}([\s|\S]+?)\{\/javascript\}/g){
+	# Javascript
+	while ($message =~ /\{js\}([\s|\S]+?)\{\/js\}/g){
 		$code = $1;
-		$code =~ s/&amp;/&/g;
-		$code =~ s/&lt;/</g;
-		$code =~ s/&gt;/>/g;
-		$code =~ s/&quot;/"/g;
-		$message =~ s/\{javascript\}([\s|\S]+?)\{\/javascript\}/<pre class="brush:js;">$code<\/pre>/;
+		$message =~ s/\{js\}([\s|\S]+?)\{\/js\}/<pre class="line-numbers"><code class="lang-javascript">$code<\/code><\/pre>/;
 	}
-=cut
-	#Delphi
+	# Delphi
 	while ($message =~ /\{delphi\}([\s|\S]+?)\{\/delphi\}/g){
 		$code = $1;
-		$code =~ s/&amp;/&/g;
-		$code =~ s/&lt;/</g;
-		$code =~ s/&gt;/>/g;
-		$code =~ s/&quot;/"/g;
-		$code =~ s/<script/javascriptは使えません/gi;
-		$message =~ s/\{delphi\}([\s|\S]+?)\{\/delphi\}/<pre class="brush:delphi;">$code<\/pre>/;
+		$message =~ s/\{delphi\}([\s|\S]+?)\{\/delphi\}/<pre class="line-numbers"><code class="lang-pascal">$code<\/code><\/pre>/;
+	}
+	# html
+	while ($message =~ /\{html\}([\s|\S]+?)\{\/html\}/g){
+		$code = $1;
+		$message =~ s/\{html\}([\s|\S]+?)\{\/html\}/<pre class="line-numbers"><code class="lang-html">$code<\/code><\/pre>/;
+	}
+	# C
+	while ($message =~ /\{c\}([\s|\S]+?)\{\/c\}/g){
+		$code = $1;
+		$message =~ s/\{c\}([\s|\S]+?)\{\/c\}/<pre class="line-numbers"><code class="lang-c">$code<\/code><\/pre>/;
 	}
 	if ($urllinkflag == 1){
 		$message =~ s*(https?://[\S]+)(?=<br>|\s|$)*<a href=\"$1" target=\"_blank\">$1<\/a>*ig;
@@ -311,66 +300,106 @@ if($in{read} >= 1){
 			++$ii;
 			if(4 == $ii){ last; }
 		}
-		#Perl
-		if ($message_p =~ /<pre class="brush:perl;">[\s|\S]+?<\/pre>/){
+		# Perl
+		if ($message_p =~ /<pre class="line-numbers"><code class="lang-perl">[\s|\S]+?<\/code><\/pre>/){
 			
-			#改行を変換　ループから抜ける為にわざと誤変換
-			while ($message_p =~ /<pre class="brush:perl;">([\s|\S]+?)<\/pre>/g){
+			# 改行を変換　ループから抜ける為にわざと誤変換
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-perl">([\s|\S]+?)<\/code><\/pre>/g){
 				$code = $1;
 				$code =~ s/<br>/\r\n/g;
-				$message_p =~ s/<pre class="brush:perl;">([\s|\S]+?)<\/pre>/<pre class="brush:perl;">$code<pre>/;
+				$code =~ s/&amp;/&/g;
+				$code =~ s/&quot;/"/g;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-perl">([\s|\S]+?)<\/code><\/pre>/<pre class="line-numbers"><code class="lang-perl">$code<\/code><pre>/;
 			}
-			#ループから抜ける為に誤変換したものを直す処理。番兵法or他に簡潔な方法があったら変える予定
-			while ($message_p =~ /<pre class="brush:perl;">([\s|\S]+?)<pre>/g){
+			# ループから抜ける為に誤変換したものを直す処理。番兵法or他に簡潔な方法があったら変える予定
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-perl">([\s|\S]+?)<\/code><pre>/g){
 				$code = $1;
-				$message_p =~ s/<pre class="brush:perl;">([\s|\S]+?)<pre>/<pre class="brush:perl;">$code<\/pre>/;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-perl">([\s|\S]+?)<pre>/<pre class="line-numbers"><code class="lang-perl">$code<\/code><\/pre>/;
 			}
 		}
-		#CSS
-		if ($message_p =~ /<pre class="brush:css;">[\s|\S]+?<\/pre>/){
+		# CSS
+		if ($message_p =~ /<pre class="line-numbers"><code class="lang-css">[\s|\S]+?<\/code><\/pre>/){
 			
-			#改行を変換　ループから抜ける為にわざと誤変換
-			while ($message_p =~ /<pre class="brush:css;">([\s|\S]+?)<\/pre>/g){
+			# 改行を変換　ループから抜ける為にわざと誤変換
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-css">([\s|\S]+?)<\/code><\/pre>/g){
 				$code = $1;
 				$code =~ s/<br>/\r\n/g;
-				$message_p =~ s/<pre class="brush:css;">([\s|\S]+?)<\/pre>/<pre class="brush:css;">$code<pre>/;
+				$code =~ s/&amp;/&/g;
+				$code =~ s/&quot;/"/g;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-css">([\s|\S]+?)<\/code><\/pre>/<pre class="line-numbers"><code class="lang-css">$code<\/code><pre>/;
 			}
-			#ループから抜ける為に誤変換したものを直す処理。番兵法or他に簡潔な方法があったら変える予定
-			while ($message_p =~ /<pre class="brush:css;">([\s|\S]+?)<pre>/g){
+			# ループから抜ける為に誤変換したものを直す処理。番兵法or他に簡潔な方法があったら変える予定
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-css">([\s|\S]+?)<\/code><pre>/g){
 				$code = $1;
-				$message_p =~ s/<pre class="brush:css;">([\s|\S]+?)<pre>/<pre class="brush:css;">$code<\/pre>/;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-css">([\s|\S]+?)<pre>/<pre class="line-numbers"><code class="lang-css">$code<\/code><\/pre>/;
 			}
 		}
-=pod
-		#Javascript
-		if ($message_p =~ /<pre class="brush:js;">[\s|\S]+?<\/pre>/){
+		# javascript
+		if ($message_p =~ /<pre class="line-numbers"><code class="lang-javascript">[\s|\S]+?<\/code><\/pre>/){
 			
-			#改行を変換　ループから抜ける為にわざと誤変換
-			while ($message_p =~ /<pre class="brush:js;">([\s|\S]+?)<\/pre>/g){
+			# 改行を変換　ループから抜ける為にわざと誤変換
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-javascript">([\s|\S]+?)<\/code><\/pre>/g){
 				$code = $1;
 				$code =~ s/<br>/\r\n/g;
-				$message_p =~ s/<pre class="brush:js;">([\s|\S]+?)<\/pre>/<pre class="brush:js;">$code<pre>/;
+				$code =~ s/&amp;/&/g;
+				$code =~ s/&quot;/"/g;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-javascript">([\s|\S]+?)<\/code><\/pre>/<pre class="line-numbers"><code class="lang-javascript">$code<\/code><pre>/;
 			}
-			#ループから抜ける為に誤変換したものを直す処理。番兵法or他に簡潔な方法があったら変える予定
-			while ($message_p =~ /<pre class="brush:js;">([\s|\S]+?)<pre>/g){
+			# ループから抜ける為に誤変換したものを直す処理。番兵法or他に簡潔な方法があったら変える予定
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-javascript">([\s|\S]+?)<\/code><pre>/g){
 				$code = $1;
-				$message_p =~ s/<pre class="brush:js;">([\s|\S]+?)<pre>/<pre class="brush:js;">$code<\/pre>/;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-javascript">([\s|\S]+?)<pre>/<pre class="line-numbers"><code class="lang-javascript">$code<\/code><\/pre>/;
 			}
 		}
-=cut
-		#Delphi
-		if ($message_p =~ /<pre class="brush:delphi;">[\s|\S]+?<\/pre>/){
+		# Delphi
+		if ($message_p =~ /<pre class="line-numbers"><code class="lang-pascal">[\s|\S]+?<\/code><\/pre>/){
 			
-			#改行を変換　ループから抜ける為にわざと誤変換
-			while ($message_p =~ /<pre class="brush:delphi;">([\s|\S]+?)<\/pre>/g){
+			# 改行を変換　ループから抜ける為にわざと誤変換
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-pascal">([\s|\S]+?)<\/code><\/pre>/g){
 				$code = $1;
 				$code =~ s/<br>/\r\n/g;
-				$message_p =~ s/<pre class="brush:delphi;">([\s|\S]+?)<\/pre>/<pre class="brush:delphi;">$code<pre>/;
+				$code =~ s/&amp;/&/g;
+				$code =~ s/&quot;/"/g;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-pascal">([\s|\S]+?)<\/code><\/pre>/<pre class="line-numbers"><code class="lang-pascal">$code<\/code><pre>/;
 			}
-			#ループから抜ける為に誤変換したものを直す処理。番兵法or他に簡潔な方法があったら変える予定
-			while ($message_p =~ /<pre class="brush:delphi;">([\s|\S]+?)<pre>/g){
+			# ループから抜ける為に誤変換したものを直す処理。番兵法or他に簡潔な方法があったら変える予定
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-pascal">([\s|\S]+?)<\/code><pre>/g){
 				$code = $1;
-				$message_p =~ s/<pre class="brush:delphi;">([\s|\S]+?)<pre>/<pre class="brush:delphi;">$code<\/pre>/;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-pascal">([\s|\S]+?)<pre>/<pre class="line-numbers"><code class="lang-pascal">$code<\/code><\/pre>/;
+			}
+		}
+		# html
+		if ($message_p =~ /<pre class="line-numbers"><code class="lang-html">[\s|\S]+?<\/code><\/pre>/){
+			
+			# 改行を変換　ループから抜ける為にわざと誤変換
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-html">([\s|\S]+?)<\/code><\/pre>/g){
+				$code = $1;
+				$code =~ s/<br>/\r\n/g;
+				$code =~ s/&amp;/&/g;
+				$code =~ s/&quot;/"/g;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-html">([\s|\S]+?)<\/code><\/pre>/<pre class="line-numbers"><code class="lang-html">$code<\/code><pre>/;
+			}
+			# ループから抜ける為に誤変換したものを直す処理。番兵法or他に簡潔な方法があったら変える予定
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-html">([\s|\S]+?)<\/code><pre>/g){
+				$code = $1;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-html">([\s|\S]+?)<pre>/<pre class="line-numbers"><code class="lang-html">$code<\/code><\/pre>/;
+			}
+		}
+		# C
+		if ($message_p =~ /<pre class="line-numbers"><code class="lang-c">[\s|\S]+?<\/code><\/pre>/){
+			
+			# 改行を変換　ループから抜ける為にわざと誤変換
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-c">([\s|\S]+?)<\/code><\/pre>/g){
+				$code = $1;
+				$code =~ s/<br>/\r\n/g;
+				$code =~ s/&amp;/&/g;
+				$code =~ s/&quot;/"/g;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-c">([\s|\S]+?)<\/code><\/pre>/<pre class="line-numbers"><code class="lang-c">$code<\/code><pre>/;
+			}
+			# ループから抜ける為に誤変換したものを直す処理。番兵法or他に簡潔な方法があったら変える予定
+			while ($message_p =~ /<pre class="line-numbers"><code class="lang-c">([\s|\S]+?)<\/code><pre>/g){
+				$code = $1;
+				$message_p =~ s/<pre class="line-numbers"><code class="lang-c">([\s|\S]+?)<pre>/<pre class="line-numbers"><code class="lang-c">$code<\/code><\/pre>/;
 			}
 		}
 		$disp[$i] = "<hr color=#3377bb>[$no_p]$name_p<br><font color=#ff3399>ID:$id_p</font><br>$message_p<br>@File<br><font  color=#dddd33>$date_p</font>";
@@ -384,26 +413,12 @@ if($in{read} >= 1){
 	<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />
 	<meta http-equiv=\"Content-Script-Type\" content=\"text/javascript\">
 	<meta http-equiv=\"Content-Style-Type\" content=\"text/css\">
-	<link type=\"text/css\" rel=\"stylesheet\" href=\"https://developer-world.net/sh/styles/shCore.css\" />
-	<link type=\"text/css\" rel=\"stylesheet\" href=\"https://developer-world.net/sh/styles/shCoreDefault.css\" />
-	<link type=\"text/css\" rel=\"stylesheet\" href=\"https://developer-world.net/sh/styles/shThemeDefault.css\" />
+	<link type="text/css" rel="stylesheet" href="https://developer-world.net/prism.css" />	
 	<link type=\"text/css\" rel=\"stylesheet\" href=\"https://developer-world.net/bbs/main.css\" />
 	<script src=\"../jquery-3.5.1.min.js\"></script>
 	<script src=\"main.js\"></script>
 	<script src="mojicount.js"></script>
-	<script type=\"text/javascript\" src=\"https://developer-world.net/sh/scripts/XRegExp.js\"></script>
-	<script type=\"text/javascript\" src=\"https://developer-world.net/sh/scripts/shCore.js\"></script>
-	<script type=\"text/javascript\" src=\"https://developer-world.net/sh/scripts/shBrushPerl.js\"></script>
-	<script type=\"text/javascript\" src=\"https://developer-world.net/sh/scripts/shBrushCss.js\"></script>
-	<script type=\"text/javascript\" src=\"https://developer-world.net/sh/scripts/shBrushJScript.js\"></script>
-	<script type=\"text/javascript\" src=\"https://developer-world.net/sh/scripts/shBrushDelphi.js\"></script>
-	
-	<script type=\"text/javascript\">
-	SyntaxHighlighter.defaults['auto-links'] = false;
-	SyntaxHighlighter.defaults['toolbar'] = false;
-	SyntaxHighlighter.defaults['gutter'] = true;
-	SyntaxHighlighter.all();
-	</script>
+	<script src="https://developer-world.net/prism.js"></script>
 	
 	<Script Language=\"JavaScript\">
 <!--
@@ -433,8 +448,8 @@ EOF
 	print "@disp";
 	print <<"EOF";
 		<hr color="#3377bb">
-<table border="0" width="100%" bgcolor="$bgcolor"><tr><td colspan="2" style="background-color:$background_color; border:1px solid $solid_color;">
-<a href="#top" name="bottom" accesskey="2">▲</a> <a href="$ENV{SCRIPT_NAME}">掲示板トップ</a>
+		<table border="0" width="100%" bgcolor="$bgcolor"><tr><td colspan="2" style="background-color:$background_color; border:1px solid $solid_color;">
+		<a href="#top" name="bottom" accesskey="2">▲</a> <a href="$ENV{SCRIPT_NAME}">掲示板トップ</a>
 EOF
 	
 	if (($size > $r_num2) and (($r_vw - 1) == ($r_num2 - $r_num1))){
@@ -470,7 +485,8 @@ EOF
 		<input type=\"button\" value=\"空\" class=\"tag\"> <input type=\"button\" value=\"桃\" class=\"tag\"> <input type=\"button\" value=\"大\" class=\"tag\"> 
 		<input type=\"button\" value=\"小\" class=\"tag\"> <input type=\"button\" value=\"流\" class=\"tag\"> <input type=\"button\" value=\"往\" class=\"tag\"> 
 		<input type="button" value="太" class="tag"> 
-		<input type=\"button\" value=\"perl\" class=\"tag\"> <input type=\"button\" value=\"delphi\" class=\"tag\"> <input type=\"button\" value=\"css\" class=\"tag\"></div></td></tr>
+		<input type=\"button\" value=\"perl\" class=\"tag\"> <input type=\"button\" value=\"delphi\" class=\"tag\"> <input type=\"button\" value=\"css\" class=\"tag\">
+		 <input type=\"button\" value=\"js\" class=\"tag\"> <input type=\"button\" value=\"html\" class=\"tag\"> <input type=\"button\" value=\"c\" class=\"tag\"></div></td></tr>
 		<tr><th>メッセージ:</th><td><textarea name="message" rows="5" cols= "45" id="message" class="message" placeholder="メッセージを入力" onKeyUp="checkText();"></textarea></td></tr>
 		<tr><th align=right><font color=#757575><div id="result_mojicount" class="result_mojicount"></div></font></th><td align=left>/$message_max</font></td></tr>
 		<tr><th>画像:</th><td><input type="file" name="img" value="" size="50" multiple="multiple"></td></tr>
@@ -586,7 +602,6 @@ $announce<br>
 <a href="#bottom" name="top" accesskey="8">▼</a> <a href = "$ENV{SCRIPT_NAME}?mode=form">投稿</a> <a href="https://developer-world.net$ENV{SCRIPT_NAME}" accesskey="5">更新</a> <a href = "$ENV{SCRIPT_NAME}?mode=search">検索</a>
 EOF
 
-#能が文字化けしてしまう為の対策
 print '<a href="https://developer-world.net/aboutbbs.html">機能</a> <a href="https://developer-world.net/">ホームページ</a></td></tr></table><hr color=#3377bb>';
 
 
@@ -787,7 +802,9 @@ objID.className='close';
 	<table>
 	<tr><th>件名:</th><td><input type="text" name="title" placeholder=\"件名を入力\"></td></tr>
 	<tr><th>名前:</th><td><input type="text" name="name" placeholder=\"お名前を入力(省略化)\" id=\"name\"></td></tr>
-	<tr><th><a href="javascript:void(0)" onClick=show();>独自タグ</a></th><td><div id="change" style="display: none;position:relative;" class="close"><input type="button" value="赤" class="tag"> <input type="button" value="緑" class="tag"> <input type="button" value="青" class="tag"> <input type="button" value="黄" class="tag"> <input type="button" value="茶" class="tag"> <input type="button" value="紫" class="tag"> <input type="button" value="空" class="tag"> <input type="button" value="桃" class="tag"> <input type="button" value="大" class="tag"> <input type="button" value="小" class="tag"> <input type="button" value="流" class="tag"> <input type="button" value="往" class="tag"> <input type="button" value="太" class="tag"> <input type="button" value="perl" class="tag"> <input type="button" value="delphi" class="tag"> <input type="button" value="css" class="tag"></div></td></tr>
+	<tr><th><a href="javascript:void(0)" onClick=show();>独自タグ</a></th><td><div id="change" style="display: none;position:relative;" class="close"><input type="button" value="赤" class="tag"> <input type="button" value="緑" class="tag"> <input type="button" value="青" class="tag"> <input type="button" value="黄" class="tag"> <input type="button" value="茶" class="tag"> <input type="button" value="紫" class="tag"> <input type="button" value="空" class="tag"> <input type="button" value="桃" class="tag"> <input type="button" value="大" class="tag"> <input type="button" value="小" class="tag"> <input type="button" value="流" class="tag"> <input type="button" value="往" class="tag"> <input type="button" value="太" class="tag">
+	 <input type="button" value="perl" class="tag"> <input type="button" value="delphi" class="tag"> <input type="button" value="css" class="tag">
+	 <input type=\"button\" value=\"js\" class=\"tag\"> <input type=\"button\" value=\"html\" class=\"tag\"> <input type=\"button\" value=\"c\" class=\"tag\"></div></td></tr>
 	<tr><th>メッセージ:</th><td><textarea name="message" rows="5" cols= "45" id="message" class="message" placeholder=\"メッセージを入力\" onKeyUp="checkText();"></textarea></td></tr>
 	<tr><th align=right><font color=#757575><div id="result_mojicount" class="result_mojicount"></div></font></th><td align=left>/$message_max</font></td></tr>
 	<tr><th>画像:</th><td><input type="file" name="img" value="" size="50" multiple="multiple"></td></tr>
@@ -818,7 +835,6 @@ sub form_processing{
 	} else {
 		$alldata = $ENV{'QUERY_STRING'};
 	}
-	#$test = $alldata;
 	if (defined($ENV{'CONTENT_TYPE'}) && $ENV{'CONTENT_TYPE'}=~m|^multipart/form-data|){
 		my ($split) = split(/\x0D\x0A/, $alldata);
 		my $ii = 0;
@@ -1170,21 +1186,8 @@ sub data_mente_res {
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta http-equiv="Content-Script-Type" content="text/javascript">
 		<meta http-equiv="Content-Style-Type" content="text/css">
-		<link type="text/css" rel="stylesheet" href="https://developer-world.net/sh/styles/shCore.css" />
-		<link type="text/css" rel="stylesheet" href="https://developer-world.net/sh/styles/shCoreDefault.css" />
-		<link type="text/css" rel="stylesheet" href="https://developer-world.net/sh/styles/shThemeDefault.css" />
-		<script type="text/javascript" src="https://developer-world.net/sh/scripts/XRegExp.js"></script>
-		<script type="text/javascript" src="https://developer-world.net/sh/scripts/shCore.js"></script>
-		<script type="text/javascript" src="https://developer-world.net/sh/scripts/shBrushPerl.js"></script>
-		<script type="text/javascript" src="https://developer-world.net/sh/scripts/shBrushCss.js"></script>
-		<script type="text/javascript" src="https://developer-world.net/sh/scripts/shBrushJScript.js"></script>
-		<script type="text/javascript" src="https://developer-world.net/sh/scripts/shBrushDelphi.js"></script>
-		<script type="text/javascript">
-		SyntaxHighlighter.defaults['auto-links'] = false;
-		SyntaxHighlighter.defaults['toolbar'] = false;
-		SyntaxHighlighter.defaults['gutter'] = true;
-		SyntaxHighlighter.all();
-		</script>
+		<link type="text/css" rel="stylesheet" href="https://developer-world.net/prism.css" />
+		<script src="https://developer-world.net/prism.js"></script>
 		<title>$title</title>
 		</head>
 		<body>
@@ -1229,8 +1232,6 @@ EOF
 			push(@deletelist,$in{"selectedres$i"});
 		}
 	}
-	#print "$#deletelist";
-	# $#deletelistは使わない事！バグがある。
 	my $length = @deletelist;
 	if ($length == 0){
 		error("レスを削除する場合は、選択してからボタンを押して下さい。");
@@ -1305,4 +1306,3 @@ EOF
 	}
 	exit;
 }
-
